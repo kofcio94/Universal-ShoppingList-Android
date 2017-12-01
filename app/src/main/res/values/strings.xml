@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Shopping lists</string>
+    <string name="add_item">Add an item</string>
+    <string name="shopping_list_name">Shopping list name</string>
+    <string name="loading">Loading…</string>
+    <string name="shopping_list_name_item">Item name</string>
+    <string name="current_list">Current list</string>
+    <string name="archived_list">Archived list</string>
+    <string name="archived">Successfully archived!</string>
+    <string name="deleted">Successfully deleted!</string>
+    <string name="undo">UNDO</string>
+
+    <string-array name="fragments">
+        <item>@string/current_list</item>
+        <item>@string/archived_list</item>
+    </string-array>
+    <string name="save">Save</string>
+    <string name="to_add_item_write_below_its_name">To add item, write below its name</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="transition_dialog">transition_dialog</string>
+    <string name="transition_image_to_toolbar">transition_image</string>
+    <string name="empty_error">Fill in fields</string>
+    <string name="data_malformed">Data malformed! Missing rootId parameter!</string>
+</resources>
