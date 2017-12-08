@@ -13,6 +13,10 @@ import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootList
 
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 public class MainPresenter extends BasePresenter<MainActivity> {
 
     public interface ViewController {
@@ -59,22 +63,29 @@ public class MainPresenter extends BasePresenter<MainActivity> {
     }
 
     public void setUpDataCurrent(RecyclerView recyclerView) {
-        RootItemsSelector selector = new RootItemsSelector(false, rootListsItems ->
-                getView().initRecyclerView(recyclerView, rootListsItems));
-        selector.execute();
+        Observable.just(false)
+                .map(archived -> new RootItemsSelector().select(archived))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> getView().initRecyclerView(recyclerView, result));
     }
 
     public void setUpDataArchived(RecyclerView recyclerView) {
-        RootItemsSelector selector = new RootItemsSelector(true, rootListsItems ->
-                getView().initRecyclerViewArchived(recyclerView, rootListsItems));
-        selector.execute();
+        Observable.just(true)
+                .map(archived -> new RootItemsSelector().select(archived))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> getView().initRecyclerView(recyclerView, result));
     }
 
     public void onLikeClick(RootItem rootItem, boolean like) {
         rootItem.setLiked(like);
-        RootItemUpdater updater = new RootItemUpdater(rootItem, () -> {
-            //empty
-        });
-        updater.execute();
+        Observable.just(rootItem)
+                .map(item -> new RootItemUpdater().update(item))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    //async results
+                });
     }
 }

@@ -4,8 +4,11 @@ import android.support.annotation.Nullable;
 
 import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.rootItems.RootItemInserter;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.addItem.AddItemViewController;
-import com.hotmail.at.jablonski.michal.shoppinglist.ui.details.listAdapter.ShoppingItem;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootItem;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class AddRootItemsPresenter implements AddItemPresenter<String, Integer> {
 
@@ -18,13 +21,16 @@ public class AddRootItemsPresenter implements AddItemPresenter<String, Integer> 
 
     @Override
     public void saveItem(String itemName, @Nullable Integer rootId) {
-        RootItem item = new RootItem();
-        item.setArchived(false);
-        item.setLiked(false);
-        item.setName(itemName);
-        item.setTimestamp(System.currentTimeMillis());
+        RootItem rootItem = new RootItem();
+        rootItem.setArchived(false);
+        rootItem.setLiked(false);
+        rootItem.setName(itemName);
+        rootItem.setTimestamp(System.currentTimeMillis());
 
-        RootItemInserter inserter = new RootItemInserter(item, id -> viewController.closeDialog());
-        inserter.execute();
+        Observable.just(rootItem)
+                .map(item -> new RootItemInserter().insert(item))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((id) -> viewController.closeDialog());
     }
 }

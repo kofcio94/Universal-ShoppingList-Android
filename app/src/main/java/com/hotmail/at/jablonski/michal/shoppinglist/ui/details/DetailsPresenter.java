@@ -8,10 +8,14 @@ import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.shoppingItem
 import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.shoppingItems.ShoppingItemSelector;
 import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.shoppingItems.ShoppingItemUpdater;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.base.BasePresenter;
-import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootItem;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.details.listAdapter.ShoppingItem;
+import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootItem;
 
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class DetailsPresenter extends BasePresenter<DetailsActivity> {
 
@@ -57,20 +61,29 @@ public class DetailsPresenter extends BasePresenter<DetailsActivity> {
     }
 
     private void loadDataFromDb() {
-        ShoppingItemSelector selector = new ShoppingItemSelector(rootItem, items -> {
-            this.items = items;
-            getView().refreshList(items);
-        });
-        selector.execute();
+        Observable.just(rootItem)
+                .map(item -> new ShoppingItemSelector().select(item))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> {
+                    this.items = result;
+                    getView().refreshList(result);
+                });
     }
 
     public void deleteItem(ShoppingItem item, List<ShoppingItem> shoppingListItems) {
-        shoppingListItems.remove(item);
-        ShoppingItemDeleter deleter = new ShoppingItemDeleter(item, () -> {
-            //deleted
-        });
-        deleter.execute();
-        getView().refreshList(shoppingListItems);
+        Observable.just(item)
+                .map(shoppingItem -> {
+                    ShoppingItemDeleter deleter = new ShoppingItemDeleter();
+                    deleter.delete(shoppingItem);
+                    return shoppingItem;
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> {
+                    shoppingListItems.remove(result);
+                    getView().refreshList(shoppingListItems);
+                });
     }
 
     public void onArrowBackClicked() {
@@ -87,34 +100,51 @@ public class DetailsPresenter extends BasePresenter<DetailsActivity> {
 
     private void archiveRoot() {
         getView().showProgressDialog();
-        RootItemArchiver archiver = new RootItemArchiver(rootItem, () -> {
-            getView().hideProgressDialog();
-            getView().showSuccessFullyArchivedDialogAndFinish();
-        });
-        archiver.execute();
+        Observable.just(rootItem)
+                .map(item -> {
+                    RootItemArchiver archiver = new RootItemArchiver();
+                    archiver.archive(item);
+                    return item;
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((item) -> {
+                    getView().hideProgressDialog();
+                    getView().showSuccessFullyArchivedDialogAndFinish();
+                });
     }
 
     private void deleteRoot() {
         getView().showProgressDialog();
-        RootItemDeleter deleter = new RootItemDeleter(rootItem, () -> {
-            getView().hideProgressDialog();
-            getView().showSuccessFullyDeletedDialogAndFinish();
-        });
-        deleter.execute();
+        Observable.just(rootItem)
+                .map(item -> {
+                    RootItemDeleter deleter = new RootItemDeleter();
+                    deleter.delete(item);
+                    return item;
+                })
+                .observeOn(Schedulers.io())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe((item) -> {
+                    getView().hideProgressDialog();
+                    getView().showSuccessFullyDeletedDialogAndFinish();
+                });
     }
 
     public void onItemChecked(boolean checked, ShoppingItem item) {
         item.setBought(checked);
         for (int i = 0; i < items.size(); i++) {
-            if (item.getId().equals(items.get(i).getId())) {
+            if (item.getId() != null && item.getId().equals(items.get(i).getId())) {
                 items.set(i, item);
             }
         }
 
-        ShoppingItemUpdater updater = new ShoppingItemUpdater(item, () -> {
-            //updated in async
-        });
-        updater.execute();
+        Observable.just(item)
+                .map(item1 -> new ShoppingItemUpdater().update(item1))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> {
+                    //updated async
+                });
     }
 
     public void refreshData() {

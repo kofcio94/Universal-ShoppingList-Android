@@ -6,6 +6,10 @@ import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.shoppingItem
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.addItem.AddItemViewController;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.details.listAdapter.ShoppingItem;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 public class AddShoppingListPresenter implements AddItemPresenter<String, Integer> {
 
     private AddItemViewController viewController;
@@ -22,9 +26,12 @@ public class AddShoppingListPresenter implements AddItemPresenter<String, Intege
             item.setBought(false);
             item.setItemName(itemName);
             item.setRootId(rootId);
-            ShoppingItemInserter inserter = new ShoppingItemInserter(item, id ->
-                    viewController.closeDialog());
-            inserter.execute();
+
+            Observable.just(item)
+                    .map(item1 -> new ShoppingItemInserter().insert(item1))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((result) -> viewController.closeDialog());
         } else
             viewController.showRootIdError();
 
