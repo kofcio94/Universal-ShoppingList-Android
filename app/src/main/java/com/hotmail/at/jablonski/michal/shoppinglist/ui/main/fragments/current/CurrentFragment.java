@@ -11,11 +11,13 @@ import android.view.ViewGroup;
 import com.hotmail.at.jablonski.michal.shoppinglist.R;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.base.BaseFragment;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.CallbackInterface;
+import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.ReverseCallbackInterface;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class CurrentFragment extends BaseFragment implements CurrentPresenter.ViewController {
+public class CurrentFragment extends BaseFragment
+        implements CurrentPresenter.ViewController, ReverseCallbackInterface {
 
     private CallbackInterface callbackInterface;
 
@@ -38,6 +40,8 @@ public class CurrentFragment extends BaseFragment implements CurrentPresenter.Vi
         View root = inflater.inflate(R.layout.fragment_current, container, false);
         initViewHolder(root);
         initPresenter();
+
+        callbackInterface.setUpCurrentReverseCallbackInterface(this);
         return root;
     }
 
@@ -45,7 +49,7 @@ public class CurrentFragment extends BaseFragment implements CurrentPresenter.Vi
     public void onResume() {
         super.onResume();
         if (callbackInterface != null)
-            callbackInterface.setUpRecyclerView(viewHolder.recyclerView);
+            callbackInterface.setUpRecyclerView();
     }
 
     private void initPresenter() {
@@ -59,7 +63,12 @@ public class CurrentFragment extends BaseFragment implements CurrentPresenter.Vi
 
     @Override
     public void initView() {
-        callbackInterface.setUpRecyclerView(viewHolder.recyclerView);
+        callbackInterface.setUpRecyclerView();
+    }
+
+    @Override
+    public RecyclerView getRecycler() {
+        return viewHolder.recyclerView;
     }
 
     static class ViewHolder {

@@ -26,6 +26,7 @@ import com.hotmail.at.jablonski.michal.shoppinglist.ui.addItem.AddItemActivity;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.base.BaseActivity;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.details.DetailsActivity;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.CallbackInterface;
+import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.ReverseCallbackInterface;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootItem;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootListsAdapter;
 import com.mikepenz.materialdrawer.Drawer;
@@ -46,6 +47,8 @@ public class MainActivity
 
     private RootListsAdapter rootAdapter;
     private RootListsAdapter rootArchivedAdapter;
+    private ReverseCallbackInterface archivedCallbackInterface;
+    private ReverseCallbackInterface currentCallbackInterface;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -292,6 +295,11 @@ public class MainActivity
     }
 
     @Override
+    public ReverseCallbackInterface getCallbackInterface(boolean archived) {
+        return archived ? archivedCallbackInterface : currentCallbackInterface;
+    }
+
+    @Override
     public void showPlusButton() {
         viewHolder.floatingActionButton.show();
     }
@@ -302,13 +310,23 @@ public class MainActivity
     }
 
     @Override
-    public void setUpRecyclerView(RecyclerView recyclerView) {
-        presenter.setUpDataCurrent(recyclerView);
+    public void setUpRecyclerView() {
+        presenter.setUpDataCurrent();
     }
 
     @Override
-    public void setUpRecyclerViewForArchivedData(RecyclerView recyclerView) {
-        presenter.setUpDataArchived(recyclerView);
+    public void setUpRecyclerViewForArchivedData() {
+        presenter.setUpDataArchived();
+    }
+
+    @Override
+    public void setUpCurrentReverseCallbackInterface(ReverseCallbackInterface reverseCallbackInterface) {
+        this.currentCallbackInterface = reverseCallbackInterface;
+    }
+
+    @Override
+    public void setUpArchivedReverseCallbackInterface(ReverseCallbackInterface reverseCallbackInterface) {
+        this.archivedCallbackInterface = reverseCallbackInterface;
     }
 
     static class ViewHolder {

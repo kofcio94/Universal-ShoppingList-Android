@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.rootItems.RootItemUpdater;
 import com.hotmail.at.jablonski.michal.shoppinglist.db.dataManagers.rootItems.RootItemsSelector;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.base.BasePresenter;
+import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.ReverseCallbackInterface;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.archived.ArchivedFragment;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.current.CurrentFragment;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.listAdapter.RootItem;
@@ -34,6 +35,8 @@ public class MainPresenter extends BasePresenter<MainActivity> {
         RootListsAdapter getAdapter();
 
         RootListsAdapter getArchivedAdapter();
+
+        ReverseCallbackInterface getCallbackInterface(boolean archived);
     }
 
     @Override
@@ -62,24 +65,31 @@ public class MainPresenter extends BasePresenter<MainActivity> {
         return new Fragment[]{currentFragment, archivedFragment};
     }
 
-    public void setUpDataCurrent(RecyclerView recyclerView) {
+    public void setUpDataCurrent() {
         Observable.just(false)
                 .map(archived -> new RootItemsSelector().select(archived))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((result) -> getView().initRecyclerView(recyclerView, result));
+                .subscribe((result) -> {
+                    RecyclerView recyclerView = getView().getCallbackInterface(false).getRecycler();
+                    getView().initRecyclerView(recyclerView, result);
+                });
     }
 
-    public void setUpDataArchived(RecyclerView recyclerView) {
+    public void setUpDataArchived() {
         Observable.just(true)
                 .map(archived -> new RootItemsSelector().select(archived))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((result) -> getView().initRecyclerView(recyclerView, result));
+                .subscribe((result) -> {
+                    RecyclerView recyclerView = getView().getCallbackInterface(true).getRecycler();
+                    getView().initRecyclerViewArchived(recyclerView, result);
+                });
     }
 
     public void onLikeClick(RootItem rootItem, boolean like) {
         rootItem.setLiked(like);
+
         Observable.just(rootItem)
                 .map(item -> new RootItemUpdater().update(item))
                 .subscribeOn(Schedulers.io())

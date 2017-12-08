@@ -56,7 +56,10 @@ public class RootDao {
             contentValues.put("id", entity.getId());
         contentValues.put("name", entity.getName());
         contentValues.put("isArchived", entity.isArchived());
-        contentValues.put("isLiked", entity.isLiked());
+
+        int isLiked = entity.isLiked() ? 1 : 0;
+
+        contentValues.put("isLiked", isLiked);
         contentValues.put("timestamp", entity.getTimestamp());
 
         return contentValues;
@@ -71,7 +74,7 @@ public class RootDao {
                 entity.setId(cursor.getInt(cursor.getColumnIndex("id")));
                 entity.setName(cursor.getString(cursor.getColumnIndex("name")));
                 entity.setArchived(cursor.getInt(cursor.getColumnIndex("isArchived")) > 0);
-                entity.setLiked(cursor.getInt(cursor.getColumnIndex("isLiked")) > 0);
+                entity.setLiked(cursor.getInt(cursor.getColumnIndex("isLiked")) != 0);
                 entity.setTimestamp(Long.parseLong(cursor.getString(cursor.getColumnIndex("timestamp"))));
 
                 list.add(entity);

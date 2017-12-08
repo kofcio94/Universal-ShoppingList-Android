@@ -11,11 +11,13 @@ import android.view.ViewGroup;
 import com.hotmail.at.jablonski.michal.shoppinglist.R;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.base.BaseFragment;
 import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.CallbackInterface;
+import com.hotmail.at.jablonski.michal.shoppinglist.ui.main.fragments.ReverseCallbackInterface;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ArchivedFragment extends BaseFragment implements ArchivedPresenter.ViewController {
+public class ArchivedFragment extends BaseFragment
+        implements ArchivedPresenter.ViewController, ReverseCallbackInterface {
 
     private CallbackInterface callbackInterface;
 
@@ -39,6 +41,7 @@ public class ArchivedFragment extends BaseFragment implements ArchivedPresenter.
         initViewHolder(root);
         initPresenter();
 
+        callbackInterface.setUpArchivedReverseCallbackInterface(this);
         return root;
     }
 
@@ -46,7 +49,7 @@ public class ArchivedFragment extends BaseFragment implements ArchivedPresenter.
     public void onResume() {
         super.onResume();
         if (callbackInterface != null)
-            callbackInterface.setUpRecyclerViewForArchivedData(viewHolder.recyclerView);
+            callbackInterface.setUpRecyclerViewForArchivedData();
     }
 
     private void initPresenter() {
@@ -60,7 +63,12 @@ public class ArchivedFragment extends BaseFragment implements ArchivedPresenter.
 
     @Override
     public void initView() {
-        callbackInterface.setUpRecyclerViewForArchivedData(viewHolder.recyclerView);
+        callbackInterface.setUpRecyclerViewForArchivedData();
+    }
+
+    @Override
+    public RecyclerView getRecycler() {
+        return viewHolder.recyclerView;
     }
 
     static class ViewHolder {
